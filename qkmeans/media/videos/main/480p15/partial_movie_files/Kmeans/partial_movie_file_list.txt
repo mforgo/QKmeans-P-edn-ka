@@ -1,0 +1,4 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/mforgo/scripts/ntc/QKmeans Přednáška/qkmeans/media/videos/main/480p15/partial_movie_files/Kmeans/1185818338_2569445615_223132457.mp4'
+file 'file:/home/mforgo/scripts/ntc/QKmeans Přednáška/qkmeans/media/videos/main/480p15/partial_movie_files/Kmeans/624642324_2444399366_3941113881.mp4'
+file 'file:/home/mforgo/scripts/ntc/QKmeans Přednáška/qkmeans/media/videos/main/480p15/partial_movie_files/Kmeans/624642324_3210839190_2355975440.mp4'
