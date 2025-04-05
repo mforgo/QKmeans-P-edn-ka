@@ -308,3 +308,199 @@ class EuclideanDistance(Scene):
         all_mobjects = VGroup(axes, unclassified_dot, origins_dots, lines_and_labels, formula)
         self.play(FadeOut(all_mobjects))
         self.wait()
+
+
+class SwapTest(ThreeDScene):
+    def construct(self):
+        # Global parameters
+        SCALE = 1
+        RAD = 1
+        AXIS_TEXT = 0.5
+        CONE_HEIGHT = 0.2      # Height of the arrow head (cone)
+        CONE_WIDTH = 0.05      # Base radius of the cone
+        CYLINDER_RADIUS = 0.03 # Radius of the arrow shaft (cylinder)
+
+        # 1) Set camera orientation.
+        self.set_camera_orientation(phi=70 * DEGREES, theta=30 * DEGREES)
+       # 2) Create 3D axes with shorter lengths.
+        axes = ThreeDAxes(
+            x_range=[-4, 4, 1],
+            y_range=[-4, 4, 1],
+            z_range=[-4, 4, 1],
+            x_length=8, y_length=8, z_length=5,
+            stroke_width=2
+        )
+        self.add(axes)
+        title_text = Text("SwapTest").scale(0.8).to_edge(UP)
+        self.add_fixed_in_frame_mobjects(title_text)
+        self.play(Write(title_text))
+
+        
+        # 3) Create a semi-transparent Bloch sphere centered at the origin.
+        sphere = Surface(
+            lambda u, v: np.array([
+                SCALE * RAD * np.sin(u) * np.cos(v),
+                SCALE * RAD * np.sin(u) * np.sin(v),
+                SCALE * RAD * np.cos(u)
+            ]),
+            u_range=[0, PI],
+            v_range=[0, TAU],
+            resolution=(30, 30)
+        )
+        sphere.set_style(
+            fill_color=BLUE, fill_opacity=0.1,
+            stroke_color=BLUE_E, stroke_opacity=0.2
+        )
+        self.add(sphere)
+        
+        # 4) Add equatorial circle (xy-plane) centered at the origin.
+        circle_xy = ParametricFunction(
+            lambda t: np.array([
+                SCALE * RAD * np.cos(t),
+                SCALE * RAD * np.sin(t),
+                0
+            ]),
+            t_range=[0, TAU],
+            color=GREEN,
+        )
+        circle_xy.set_opacity(0.3)
+        self.add(circle_xy)
+        
+        # 5) Add labels.
+        ket0 = Text("|0>").scale(AXIS_TEXT * SCALE)
+        ket0.rotate(PI/2, axis=RIGHT).rotate(PI/2, axis=OUT)
+        ket0.move_to(axes.c2p(0, 0, 1.15))
+        
+        ket1 = Text("|1>").scale(AXIS_TEXT * SCALE)
+        ket1.rotate(PI/2, axis=RIGHT).rotate(PI/2, axis=OUT)
+        ket1.move_to(axes.c2p(0, 0, -1.15))
+        
+        label_x = Text("x").scale(AXIS_TEXT * SCALE)
+        label_x.rotate(PI/2, axis=RIGHT).rotate(PI/2, axis=OUT)
+        label_x.move_to(axes.c2p(1.15, 0, 0))
+        
+        label_y = Text("y").scale(AXIS_TEXT * SCALE)
+        label_y.rotate(PI/2, axis=RIGHT).rotate(PI/2, axis=OUT)
+        label_y.move_to(axes.c2p(0, 1.15, 0))
+        
+        self.add(ket0, ket1, label_x, label_y)
+        
+        # 6) Create the first qubit state arrow.
+        # Arrow 1: defined by (theta1, phi1) initially along z.
+        theta1 = 0.0   # along z
+        phi1   = 0.0
+        state_point1 = np.array([
+            RAD * np.sin(theta1) * np.cos(phi1),
+            RAD * np.sin(theta1) * np.sin(phi1),
+            RAD * np.cos(theta1)
+        ])
+        arrow_line1 = Line(ORIGIN, state_point1, color=RED, stroke_width=2)
+        arrow_head1 = Cone(
+            base_radius=CONE_WIDTH,
+            height=CONE_HEIGHT,
+            direction=state_point1,
+            fill_color=RED,
+            fill_opacity=1,
+            stroke_width=0
+        )
+        arrow_head1.shift(state_point1)
+        arrow1 = VGroup(arrow_line1, arrow_head1)
+        self.add(arrow1)
+        
+        # Change title: "Zadání polárních souřadnic na qubit"
+        self.play(FadeOut(title_text))
+        title_text = Text("Zadání polárních souřadnic na qubit").scale(0.8).to_edge(UP)
+        self.add_fixed_in_frame_mobjects(title_text)
+        self.play(Write(title_text))
+        self.wait(2)
+        
+        # Apply H gate: Rotate arrow1 by PI/2 about Y-axis.
+        self.play(FadeOut(title_text))
+        title_text = Text("Aplikování H hradla").scale(0.8).to_edge(UP)
+        self.add_fixed_in_frame_mobjects(title_text)
+        self.play(Write(title_text))
+        self.play(Rotate(arrow1, angle=PI/2, axis=Y_AXIS, about_point=ORIGIN))
+        self.wait(5)
+        
+        # --- New Step: Rotate arrow further and highlight its path ---
+        self.play(FadeOut(title_text))
+        title_text = Text("Zadání Polárních Souřadnic").scale(0.8).to_edge(UP)
+        self.add_fixed_in_frame_mobjects(title_text)
+        self.play(Write(title_text))
+        
+        # Create a traced path following the tip of arrow1.
+        traced_path = TracedPath(arrow_line1.get_end, stroke_color=RED, stroke_width=4)
+        self.add(traced_path)
+        # Further rotate arrow1 by PI/2 about Z-axis and then PI/3 about X-axis.
+        self.play(Rotate(arrow1, angle=PI/2, axis=Z_AXIS, about_point=ORIGIN))
+        self.play(Rotate(arrow1, angle=PI/3, axis=X_AXIS, about_point=ORIGIN))
+        self.play(FadeOut(traced_path))
+        self.wait(5)
+        # ---------------------------------------------------------------
+        
+        # 7) Create the second qubit state arrow.
+        # Arrow 2: defined by (theta2, phi2)
+        theta2 = 1.2
+        phi2   = 1.5
+        state_point2 = np.array([
+            RAD * np.sin(theta2) * np.cos(phi2),
+            RAD * np.sin(theta2) * np.sin(phi2),
+            RAD * np.cos(theta2)
+        ])
+        arrow_line2 = Line(ORIGIN, state_point2, color=BLUE, stroke_width=2)
+        arrow_head2 = Cone(
+            base_radius=CONE_WIDTH,
+            height=CONE_HEIGHT,
+            direction=state_point2,
+            fill_color=BLUE,
+            fill_opacity=1,
+            stroke_width=0
+        )
+        arrow_head2.shift(state_point2)
+        arrow2 = VGroup(arrow_line2, arrow_head2)
+        self.play(FadeOut(title_text))
+        title_text = Text("Přidání Středu").scale(0.8).to_edge(UP)
+        self.add_fixed_in_frame_mobjects(title_text)
+        self.play(Write(title_text))
+        self.play(FadeIn(arrow2))
+        self.wait(5)
+        
+        # 8) Animate a swap between the two qubit states via rotation.
+        # Use the lines (first elements) to compute tip positions.
+        v1 = arrow1[0].get_end()
+        v2 = arrow2[0].get_end()
+        axis_swap = np.cross(v1, v2)
+        if np.linalg.norm(axis_swap) < 1e-6:
+            axis_swap = np.array([0, 0, 1])
+        else:
+            axis_swap = axis_swap / np.linalg.norm(axis_swap)
+        dot_val = np.dot(v1, v2) / (np.linalg.norm(v1)*np.linalg.norm(v2))
+        dot_val = np.clip(dot_val, -1, 1)
+        angle_swap = np.arccos(dot_val)
+        
+        self.play(FadeOut(title_text))
+        title_text = Text("Výměna qubitů").scale(0.8).to_edge(UP)
+        self.add_fixed_in_frame_mobjects(title_text)
+        self.play(Write(title_text))
+        self.play(
+            Rotate(arrow1, angle=angle_swap, axis=axis_swap, about_point=ORIGIN),
+            Rotate(arrow2, angle=-angle_swap, axis=axis_swap, about_point=ORIGIN),
+            run_time=2
+        )
+        self.wait(5)
+        
+        # 9) Fade out everything.
+        self.play(
+            FadeOut(sphere),
+            FadeOut(axes),
+            FadeOut(circle_xy),
+            FadeOut(ket0),
+            FadeOut(ket1),
+            FadeOut(label_x),
+            FadeOut(label_y),
+            FadeOut(arrow1),
+            FadeOut(arrow2),
+            FadeOut(title_text)
+        )
+        self.wait()
+
