@@ -1,8 +1,11 @@
+import numpy as np
 from manim import *
 import random
 import colorsys
 from manim import rgb_to_color
+from manim.utils.space_ops import rotate_vector
 import math
+
 
 def evenly_spaced_colors(n):
     """
@@ -41,6 +44,7 @@ class Intro(Scene):
             FadeOut(ntc_logo)
         )
         self.wait()
+
 
 class Kmeans(Scene):
     def construct(self):
@@ -223,10 +227,84 @@ class Kmeans(Scene):
         self.wait()
 
 
-class Correlation(Scene):
+class EuclideanDistance(Scene):
     def construct(self):
-        pass
+        # 1) Create axes
+        axes = Axes(
+            x_range=[0, 10, 1],
+            y_range=[0, 10, 1],
+            x_length=6,
+            y_length=6,
+            axis_config={"include_tip": True},
+        ).shift(DOWN * 0.5)
 
-class Qkmeans(Scene):
-    def construct(self):
-        pass
+        self.play(Create(axes))
+
+        # 2) Define an unclassified point
+        px, py = 4, 4
+        unclassified_dot = Dot(
+            axes.coords_to_point(px, py),
+            color=WHITE,
+            radius=0.12
+        )
+
+        # 3) Define 3 origins (cluster centers) each with distinct color
+        origins_coords = [(2, 2), (6, 7), (8, 2)]
+        origins_colors = [RED, GREEN, BLUE]
+        origins_dots = VGroup()
+        for (cx, cy), ccol in zip(origins_coords, origins_colors):
+            dot = Dot(
+                axes.coords_to_point(cx, cy),
+                color=ccol,
+                radius=0.12
+            )
+            origins_dots.add(dot)
+
+        # Show the unclassified dot and origin dots
+        self.play(FadeIn(unclassified_dot, shift=UP))
+        self.play(LaggedStart(*[FadeIn(dot, shift=UP) for dot in origins_dots], lag_ratio=0.2))
+        self.wait(1)
+
+        # 4) Draw lines & labels
+        lines_and_labels = VGroup()
+
+        for (cx, cy), origin_dot, ccol in zip(origins_coords, origins_dots, origins_colors):
+            # Create line
+            line = Line(
+                start=origin_dot.get_center(),
+                end=unclassified_dot.get_center(),
+                color=ccol
+            )
+            # Compute Euclidean distance in the axes coordinate space
+            dist_val = math.dist((cx, cy), (px, py))
+
+            # Create label
+            label = MathTex(f"{dist_val:.2f}", color=ccol).scale(0.7)
+            # Place label perpendicular (offset) to the line at its midpoint
+            midpoint = line.get_midpoint()
+            line_angle = line.get_angle()
+            # We rotate UP by the line's angle to get a perpendicular offset
+            offset_dir = rotate_vector(UP, line_angle)
+            label.move_to(midpoint + offset_dir * 0.3)  # Adjust 0.3 as needed
+
+            lines_and_labels.add(line, label)
+
+        # Animate lines first, then labels
+        lines = [m for m in lines_and_labels if isinstance(m, Line)]
+        labels = [m for m in lines_and_labels if isinstance(m, MathTex)]
+        self.play(*[Create(line) for line in lines], run_time=2)
+        self.play(*[FadeIn(lbl) for lbl in labels], run_time=1)
+        self.wait(2)
+
+        # 5) Show the Euclidean distance formula at the top
+        formula = Tex(
+            r"Euclidean Distance: $d(\mathbf{x}, \mathbf{y}) = \sqrt{\sum_i (x_i - y_i)^2}$"
+        ).scale(0.6).to_edge(UP)
+
+        self.play(Write(formula))
+        self.wait(3)
+
+        # 6) Fade out everything
+        all_mobjects = VGroup(axes, unclassified_dot, origins_dots, lines_and_labels, formula)
+        self.play(FadeOut(all_mobjects))
+        self.wait()

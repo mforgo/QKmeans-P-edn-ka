@@ -1,0 +1,7 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/mforgo/scripts/ntc/QKmeans Přednáška/qkmeans/media/videos/main/480p15/partial_movie_files/Qkmeans/238433677_742701152_223132457.mp4'
+file 'file:/home/mforgo/scripts/ntc/QKmeans Přednáška/qkmeans/media/videos/main/480p15/partial_movie_files/Qkmeans/632326084_143408599_2135589370.mp4'
+file 'file:/home/mforgo/scripts/ntc/QKmeans Přednáška/qkmeans/media/videos/main/480p15/partial_movie_files/Qkmeans/3117461886_2581833332_268782569.mp4'
+file 'file:/home/mforgo/scripts/ntc/QKmeans Přednáška/qkmeans/media/videos/main/480p15/partial_movie_files/Qkmeans/2511531793_2230675760_3152397190.mp4'
+file 'file:/home/mforgo/scripts/ntc/QKmeans Přednáška/qkmeans/media/videos/main/480p15/partial_movie_files/Qkmeans/2511531793_695068029_469935536.mp4'
+file 'file:/home/mforgo/scripts/ntc/QKmeans Přednáška/qkmeans/media/videos/main/480p15/partial_movie_files/Qkmeans/2511531793_4073845205_2075879672.mp4'
