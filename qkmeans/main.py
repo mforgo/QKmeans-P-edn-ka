@@ -1,7 +1,18 @@
-
 from manim import *
 import random
-import numpy as np
+import colorsys
+from manim import rgb_to_color
+import math
+
+def evenly_spaced_colors(n):
+    """
+    Returns a list of `n` Color objects evenly spaced in HSV hue.
+    Each color is highly saturated (S=1) and bright (V=1).
+    """
+    return [
+        rgb_to_color(colorsys.hsv_to_rgb(i / n, 1.0, 1.0))
+        for i in range(n)
+    ]
 
 class Intro(Scene):
     def construct(self):
@@ -33,33 +44,184 @@ class Intro(Scene):
 
 class Kmeans(Scene):
     def construct(self):
-        # Create axes
+        random.seed(42)  # for reproducibility (remove to be fully random)
+        K = random.randint(2, 4)  # random # of clusters in [2,4]
+
+        # -----------------------------
+        # 1) Setup axes
+        # -----------------------------
         axes = Axes(
-            x_range=[0, 10, 1],  # from 0 to 10 with tick spacing of 1
-            y_range=[0, 10, 1],  # from 0 to 10 with tick spacing of 1
+            x_range=[0, 10, 1],
+            y_range=[0, 10, 1],
             x_length=6,
             y_length=6,
             axis_config={"include_tip": True},
-        ).shift(DOWN * 0.5)  # Shift slightly down for aesthetics
+        ).shift(DOWN * 0.5)
 
-        # Animate the axes on screen
         self.play(Create(axes))
 
-        # Generate 20 random points and place them on the axes
-        dots = VGroup()
-        for _ in range(20):
-            # Random x, y in [0, 9]
+        # -----------------------------
+        # 2) Generate data points
+        # -----------------------------
+        NUM_POINTS = 21
+        data_coords = []
+        data_dots = VGroup()
+
+        for _ in range(NUM_POINTS):
             x = random.uniform(0, 9)
             y = random.uniform(0, 9)
-            dot = Dot(
-                point=axes.coords_to_point(x, y),
-                color=BLUE
-            )
-            dots.add(dot)
+            dot = Dot(axes.coords_to_point(x, y), color=GREY)
+            data_coords.append((x, y))
+            data_dots.add(dot)
 
-        # Animate dots appearing one by one (with a small lag)
-        self.play(LaggedStart(*[FadeIn(dot, scale=0.5) for dot in dots], lag_ratio=0.1))
-        self.wait(20)
+        self.play(
+            LaggedStart(
+                *[FadeIn(dot, scale=0.5) for dot in data_dots],
+                lag_ratio=0.1
+            )
+        )
+        self.wait(1)
+
+        # -----------------------------
+        # 3) Generate cluster centers
+        # -----------------------------
+        cluster_coords = []
+        cluster_dots = VGroup()
+        cluster_colors = evenly_spaced_colors(K)
+
+        for i in range(K):
+            cx = random.uniform(0, 9)
+            cy = random.uniform(0, 9)
+            c_dot = Dot(
+                axes.coords_to_point(cx, cy),
+                color=cluster_colors[i],
+                radius=0.14
+            )
+            cluster_coords.append((cx, cy))
+            cluster_dots.add(c_dot)
+
+        self.play(
+            LaggedStart(
+                *[FadeIn(dot, scale=0.8) for dot in cluster_dots],
+                lag_ratio=0.1
+            )
+        )
+        self.wait(1)
+
+        # -----------------------------
+        # 4) K-Means Iteration
+        # -----------------------------
+        MAX_ITER = 10
+        THRESHOLD = 0.02  # if cluster centers move less than this, we consider stable
+
+        for iteration in range(MAX_ITER):
+            # a) Demonstrate lines to the FIRST data point ONLY in iteration 0
+            if iteration == 0:
+                first_index = 0
+                (px, py) = data_coords[first_index]
+                first_dot = data_dots[first_index]
+
+                # Draw lines from the first point to each cluster center
+                lines = VGroup()
+                for i, (cx, cy) in enumerate(cluster_coords):
+                    line = Line(
+                        start=axes.coords_to_point(px, py),
+                        end=axes.coords_to_point(cx, cy),
+                        color=cluster_colors[i]
+                    )
+                    lines.add(line)
+
+                # Animate creation of lines
+                self.play(
+                    LaggedStart(*[Create(line) for line in lines], lag_ratio=0.1)
+                )
+                self.wait(0.5)
+
+                # Find nearest center to the first point
+                dists = [
+                    math.dist((px, py), (cx, cy))
+                    for (cx, cy) in cluster_coords
+                ]
+                min_index = dists.index(min(dists))
+                # Color the first dot
+                self.play(first_dot.animate.set_color(cluster_colors[min_index]))
+                self.wait(0.5)
+
+                # Fade out lines
+                self.play(*[FadeOut(line) for line in lines])
+                self.wait(0.5)
+
+            # b) Assign each point to its nearest cluster
+            cluster_assignments = [[] for _ in range(K)]
+            for i, (px, py) in enumerate(data_coords):
+                dists = [
+                    math.dist((px, py), (cx, cy))
+                    for (cx, cy) in cluster_coords
+                ]
+                min_idx = dists.index(min(dists))
+                cluster_assignments[min_idx].append(i)
+
+            # c) Animate coloring of the points
+            anims = []
+            for cluster_idx, indices in enumerate(cluster_assignments):
+                col = cluster_colors[cluster_idx]
+                for i in indices:
+                    anims.append(data_dots[i].animate.set_color(col))
+
+            # If there's at least one coloring animation, play them
+            if anims:
+                self.play(*anims, run_time=1)
+                self.wait(0.5)
+
+            # d) Recompute each cluster center as the mean of assigned points
+            new_cluster_coords = []
+            total_shift = 0.0
+            for cluster_idx, indices in enumerate(cluster_assignments):
+                if len(indices) == 0:
+                    # No points assigned => keep old position
+                    new_cluster_coords.append(cluster_coords[cluster_idx])
+                    continue
+
+                mean_x = sum(data_coords[i][0] for i in indices) / len(indices)
+                mean_y = sum(data_coords[i][1] for i in indices) / len(indices)
+
+                old_cx, old_cy = cluster_coords[cluster_idx]
+                shift = math.dist((old_cx, old_cy), (mean_x, mean_y))
+                total_shift += shift
+
+                new_cluster_coords.append((mean_x, mean_y))
+
+            # e) Animate movement of cluster centers
+            center_animations = []
+            for idx, (newx, newy) in enumerate(new_cluster_coords):
+                (oldx, oldy) = cluster_coords[idx]
+                if abs(newx - oldx) > 1e-9 or abs(newy - oldy) > 1e-9:
+                    center_animations.append(
+                        cluster_dots[idx].animate.move_to(
+                            axes.coords_to_point(newx, newy)
+                        )
+                    )
+
+            if center_animations:
+                self.play(*center_animations, run_time=1)
+                self.wait(0.5)
+
+            # Update cluster positions
+            cluster_coords = new_cluster_coords
+
+            # f) Check for convergence
+            if total_shift < THRESHOLD:
+                break
+
+        # Final pause, fade out everything
+        self.wait(1)
+        self.play(
+            FadeOut(data_dots),
+            FadeOut(cluster_dots),
+            FadeOut(axes),
+        )
+        self.wait()
+
 
 class Correlation(Scene):
     def construct(self):
