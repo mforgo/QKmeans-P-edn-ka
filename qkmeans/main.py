@@ -314,9 +314,8 @@ class Qcirc(Scene):
     def construct(self):
         svg = SVGMobject("./assets/qcirc.svg").scale(3)
         svg.move_to(ORIGIN)
-
         self.play(FadeIn(svg))
-        self.wait(2)
+        self.wait(5)
 
 class SwapTest(ThreeDScene):
     def construct(self):
