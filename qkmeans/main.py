@@ -504,3 +504,149 @@ class SwapTest(ThreeDScene):
         )
         self.wait()
 
+class LingebraExplanation(Scene):
+    def construct(self):
+        # 1) Prepare your data: a mapping from title → list of MathTex frames
+        states_dict = {
+            # key: what the title bar should read
+            "1. Inicializace qubitů": [
+                MathTex(r"|q_0,\,q_1,\,q_2\rangle", font_size=48),
+                MathTex(r"\,|0\rangle \otimes |0\rangle \otimes |0\rangle", font_size=48),
+                MathTex(
+                    r"\begin{bmatrix}"
+                    r"0\\0\\0\\0\\0\\0\\0\\0"
+                    r"\end{bmatrix}",
+                    font_size=48,
+                )
+            ],
+            "2. Aplikování H hradla na qubity": [
+                MathTex(r"H", font_size=48),
+                MathTex(
+                    r"H = \frac{1}{\sqrt{2}}"
+                    r"\begin{bmatrix}1 & 1 \\ 1 & -1\end{bmatrix}",
+                    font_size=48
+                ),
+                MathTex(
+                    r"\begin{bmatrix}1 & 1 \\ 1 & -1\end{bmatrix}"
+                    r"\begin{bmatrix}"
+                    r"0\\0\\0\\0\\0\\0\\0\\0"
+                    r"\end{bmatrix}",
+                    font_size=48
+                ),
+                MathTex(
+                    r"\bigl(H \otimes H \otimes H\bigr)"
+                    r"\begin{bmatrix}"
+                    r"0\\0\\0\\0\\0\\0\\0\\0"
+                    r"\end{bmatrix}"
+                    r" = "
+                    r"\frac{1}{\sqrt{8}}"
+                    r"\begin{bmatrix}"
+                    r"1\\1\\1\\1\\1\\1\\1\\1"
+                    r"\end{bmatrix}",
+                    font_size=48
+                ),
+            ],
+            "3. Zadání Polárních Souřadnic":[
+                MathTex(
+                    r"U(\theta,\phi) =",
+                    r"\begin{pmatrix}"
+                    r"\cos\tfrac{\theta}{2} & -e^{\,i\phi}\sin\tfrac{\theta}{2}\\[6pt]"
+                    r"e^{-\,i\phi}\sin\tfrac{\theta}{2} & \cos\tfrac{\theta}{2}"
+                    r"\end{pmatrix}",
+                    font_size=48,
+                ),
+                MathTex(
+                    r"|\psi_2\rangle",
+                    r"=",
+                    r"\frac{1}{\sqrt{2}}",
+                    r"\bigl(|0\rangle\otimes|\psi\rangle\otimes|\phi\rangle",
+                    r"+",
+                    r"|1\rangle\otimes|\psi\rangle\otimes|\phi\rangle\bigr)",
+                    font_size=48,
+                )
+            ],
+            "4. CSWAP": [
+                MathTex(
+                    r"\mathrm{CSWAP}\,\bigl|0\bigr\rangle\bigl|\psi\bigr\rangle\bigl|\phi\bigr\rangle"
+                    r" = \bigl|0\bigr\rangle\bigl|\psi\bigr\rangle\bigl|\phi\bigr\rangle,"
+                    r"\quad",
+                    r"\mathrm{CSWAP}\,\bigl|1\bigr\rangle\bigl|\psi\bigr\rangle\bigl|\phi\bigr\rangle"
+                    r" = \bigl|1\bigr\rangle\bigl|\phi\bigr\rangle\bigl|\psi\bigr\rangle",
+                    font_size=48,
+                ),
+                MathTex(
+                    r"|\psi_3\rangle",
+                    r"=",
+                    r"\frac{1}{\sqrt{2}}",
+                    r"\bigl(|0\rangle\,|\psi\rangle\,|\phi\rangle",
+                    r"+",
+                    r"|1\rangle\,|\phi\rangle\,|\psi\rangle\bigr)",
+                    font_size=48,
+                )
+            ],
+            "5. H na ancila qubit": [
+                MathTex(
+                    r"H_{q_2}\,|\psi_3\rangle",
+                    r"=",
+                    r"\tfrac12",
+                    r"\bigl[\,|0\rangle\bigl(|\psi\rangle|\phi\rangle + |\phi\rangle|\psi\rangle\bigr)",
+                    r"+",
+                    r"|1\rangle\bigl(|\psi\rangle|\phi\rangle - |\phi\rangle|\psi\rangle\bigr)\bigr]",
+                    font_size=48,
+                )
+            ],
+            "6. Měření ancila qubitu":[
+                MathTex(
+                    r"\begin{aligned}"
+                    r"P(0) &= \tfrac12\bigl(1 + |\langle \psi \mid \phi \rangle|^2\bigr), \\"
+                    r"P(1) &= \tfrac12\bigl(1 - |\langle \psi \mid \phi \rangle|^2\bigr)."
+                    r"\end{aligned}",
+                    font_size=48,
+                ),
+                MathTex(
+                    r"distance^2 = 1 - |\langle \psi | \phi\rangle|^2",
+                    font_size=48
+                )
+            ],
+            "7. Porovnání výsledků":[
+                MathTex(
+                    r"\begin{array}{c|c}"
+                    r"\text{Cluster} & \text{Měření} \\ \hline"
+                    r"\text{Blue}  & 143 \\"
+                    r"\text{Red}   & 407  \\"
+                    r"\text{Green} & 602"
+                    r"\end{array}",
+                    font_size=48,
+                )
+            ]
+        }
+
+        # 2) Create an (initially empty) title mobject at the top
+        title = Tex("", font_size=48).to_edge(UP)
+        self.play(Write(title))
+        self.wait(0.5)
+
+        # 3) Loop over each section
+        for section_title, frames in states_dict.items():
+            # a) Update the title
+            new_title = Tex(section_title, font_size=48).to_edge(UP)
+            self.play(TransformMatchingTex(title, new_title, run_time=0.8))
+            title = new_title
+            self.wait(0.5)
+
+            # b) Display the first frame of this section
+            current = frames[0].move_to(ORIGIN)
+            self.play(Write(current, run_time=0.8))
+            self.wait(0.5)
+
+            # c) Morph through the rest of the frames
+            for frame in frames[1:]:
+                frame.move_to(ORIGIN)
+                self.play(ReplacementTransform(current, frame, run_time=0.8))
+                self.wait(2)
+                current = frame
+
+            # d) Clean up before the next section
+            self.play(FadeOut(current), run_time=0.5)
+            self.wait(0.3)
+
