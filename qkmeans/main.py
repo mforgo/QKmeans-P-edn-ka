@@ -48,12 +48,9 @@ class Intro(Scene):
 
 class Kmeans(Scene):
     def construct(self):
-        random.seed(42)  # for reproducibility (remove to be fully random)
-        K = random.randint(2, 4)  # random # of clusters in [2,4]
+        random.seed(42)
+        K = random.randint(2, 4)
 
-        # -----------------------------
-        # 1) Setup axes
-        # -----------------------------
         axes = Axes(
             x_range=[0, 10, 1],
             y_range=[0, 10, 1],
@@ -64,9 +61,6 @@ class Kmeans(Scene):
 
         self.play(Create(axes))
 
-        # -----------------------------
-        # 2) Generate data points
-        # -----------------------------
         NUM_POINTS = 21
         data_coords = []
         data_dots = VGroup()
@@ -79,16 +73,10 @@ class Kmeans(Scene):
             data_dots.add(dot)
 
         self.play(
-            LaggedStart(
-                *[FadeIn(dot, scale=0.5) for dot in data_dots],
-                lag_ratio=0.1
-            )
+            LaggedStart(*[FadeIn(dot, scale=0.5) for dot in data_dots], lag_ratio=0.1)
         )
         self.wait(1)
 
-        # -----------------------------
-        # 3) Generate cluster centers
-        # -----------------------------
         cluster_coords = []
         cluster_dots = VGroup()
         cluster_colors = evenly_spaced_colors(K)
@@ -105,27 +93,21 @@ class Kmeans(Scene):
             cluster_dots.add(c_dot)
 
         self.play(
-            LaggedStart(
-                *[FadeIn(dot, scale=0.8) for dot in cluster_dots],
-                lag_ratio=0.1
-            )
+            LaggedStart(*[FadeIn(dot, scale=0.8) for dot in cluster_dots], lag_ratio=0.1)
         )
         self.wait(1)
 
-        # -----------------------------
-        # 4) K-Means Iteration
-        # -----------------------------
         MAX_ITER = 10
-        THRESHOLD = 0.02  # if cluster centers move less than this, we consider stable
+        THRESHOLD = 0.02
+        special_animation_done = False
+        special_cluster_idx = random.randint(0, K-1)
 
         for iteration in range(MAX_ITER):
-            # a) Demonstrate lines to the FIRST data point ONLY in iteration 0
             if iteration == 0:
                 first_index = 0
                 (px, py) = data_coords[first_index]
                 first_dot = data_dots[first_index]
 
-                # Draw lines from the first point to each cluster center
                 lines = VGroup()
                 for i, (cx, cy) in enumerate(cluster_coords):
                     line = Line(
@@ -135,27 +117,23 @@ class Kmeans(Scene):
                     )
                     lines.add(line)
 
-                # Animate creation of lines
                 self.play(
                     LaggedStart(*[Create(line) for line in lines], lag_ratio=0.1)
                 )
                 self.wait(0.5)
 
-                # Find nearest center to the first point
                 dists = [
                     math.dist((px, py), (cx, cy))
                     for (cx, cy) in cluster_coords
                 ]
                 min_index = dists.index(min(dists))
-                # Color the first dot
+
                 self.play(first_dot.animate.set_color(cluster_colors[min_index]))
                 self.wait(0.5)
 
-                # Fade out lines
                 self.play(*[FadeOut(line) for line in lines])
                 self.wait(0.5)
 
-            # b) Assign each point to its nearest cluster
             cluster_assignments = [[] for _ in range(K)]
             for i, (px, py) in enumerate(data_coords):
                 dists = [
@@ -165,24 +143,20 @@ class Kmeans(Scene):
                 min_idx = dists.index(min(dists))
                 cluster_assignments[min_idx].append(i)
 
-            # c) Animate coloring of the points
             anims = []
             for cluster_idx, indices in enumerate(cluster_assignments):
                 col = cluster_colors[cluster_idx]
                 for i in indices:
                     anims.append(data_dots[i].animate.set_color(col))
 
-            # If there's at least one coloring animation, play them
             if anims:
                 self.play(*anims, run_time=1)
                 self.wait(0.5)
 
-            # d) Recompute each cluster center as the mean of assigned points
             new_cluster_coords = []
             total_shift = 0.0
             for cluster_idx, indices in enumerate(cluster_assignments):
                 if len(indices) == 0:
-                    # No points assigned => keep old position
                     new_cluster_coords.append(cluster_coords[cluster_idx])
                     continue
 
@@ -195,29 +169,58 @@ class Kmeans(Scene):
 
                 new_cluster_coords.append((mean_x, mean_y))
 
-            # e) Animate movement of cluster centers
-            center_animations = []
             for idx, (newx, newy) in enumerate(new_cluster_coords):
                 (oldx, oldy) = cluster_coords[idx]
-                if abs(newx - oldx) > 1e-9 or abs(newy - oldy) > 1e-9:
-                    center_animations.append(
+
+                if abs(newx - oldx) < 1e-9 and abs(newy - oldy) < 1e-9:
+                    continue
+
+                if not special_animation_done and idx == special_cluster_idx:
+                    assigned_points = cluster_assignments[idx]
+                    connection_lines = VGroup()
+                    for point_idx in assigned_points:
+                        px, py = data_coords[point_idx]
+                        line = Line(
+                            start=axes.coords_to_point(px, py),
+                            end=axes.coords_to_point(newx, newy),
+                            stroke_width=2,
+                            color=cluster_colors[idx]
+                        )
+                        connection_lines.add(line)
+
+                    self.play(
+                        LaggedStart(*[Create(line) for line in connection_lines], lag_ratio=0.02),
+                        run_time=1
+                    )
+                    self.wait(0.5)
+
+                    new_centroid = Dot(
+                        axes.coords_to_point(newx, newy),
+                        color=cluster_colors[idx],
+                        radius=0.14
+                    )
+                    self.play(FadeIn(new_centroid))
+
+                    self.play(FadeOut(connection_lines))
+                    self.wait(0.5)
+
+                    self.play(Transform(cluster_dots[idx], new_centroid))
+                    self.play(FadeOut(new_centroid))
+                    self.wait(0.3)
+                else:
+                    self.play(
                         cluster_dots[idx].animate.move_to(
                             axes.coords_to_point(newx, newy)
-                        )
+                        ),
+                        run_time=1
                     )
 
-            if center_animations:
-                self.play(*center_animations, run_time=1)
-                self.wait(0.5)
-
-            # Update cluster positions
+            special_animation_done = True
             cluster_coords = new_cluster_coords
 
-            # f) Check for convergence
             if total_shift < THRESHOLD:
                 break
 
-        # Final pause, fade out everything
         self.wait(1)
         self.play(
             FadeOut(data_dots),
@@ -225,7 +228,6 @@ class Kmeans(Scene):
             FadeOut(axes),
         )
         self.wait()
-
 
 class EuclideanDistance(Scene):
     def construct(self):
@@ -298,7 +300,7 @@ class EuclideanDistance(Scene):
 
         # 5) Show the Euclidean distance formula at the top
         formula = Tex(
-            r"Euclidean Distance: $d(\mathbf{x}, \mathbf{y}) = \sqrt{\sum_i (x_i - y_i)^2}$"
+            r"Euclidean Distance: $d(\mathbf{x}, \mathbf{y}) = \sqrt{x^2 - y^2}$"
         ).scale(0.6).to_edge(UP)
 
         self.play(Write(formula))
