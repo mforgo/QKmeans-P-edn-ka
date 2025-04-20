@@ -310,6 +310,14 @@ class EuclideanDistance(Scene):
         self.play(FadeOut(all_mobjects))
         self.wait()
 
+class Qcirc(Scene):
+    def construct(self):
+        svg = SVGMobject("./assets/qcirc.svg").scale(3)
+        svg.move_to(ORIGIN)
+
+        self.play(FadeIn(svg))
+        self.wait(2)
+
 class SwapTest(ThreeDScene):
     def construct(self):
         # Global parameters
@@ -331,7 +339,7 @@ class SwapTest(ThreeDScene):
             stroke_width=2
         )
         self.add(axes)
-        title_text = Text("SwapTest").scale(0.8).to_edge(UP)
+        title_text = Text("Swap Test").scale(0.8).to_edge(UP)
         self.add_fixed_in_frame_mobjects(title_text)
         self.play(Write(title_text))
 
@@ -406,13 +414,6 @@ class SwapTest(ThreeDScene):
         arrow_head1.shift(state_point1)
         arrow1 = VGroup(arrow_line1, arrow_head1)
         self.add(arrow1)
-        
-        # Change title: "Zadání polárních souřadnic na qubit"
-        self.play(FadeOut(title_text))
-        title_text = Text("Zadání polárních souřadnic na qubit").scale(0.8).to_edge(UP)
-        self.add_fixed_in_frame_mobjects(title_text)
-        self.play(Write(title_text))
-        self.wait(2)
         
         # Apply H gate: Rotate arrow1 by PI/2 about Y-axis.
         self.play(FadeOut(title_text))
