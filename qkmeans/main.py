@@ -45,10 +45,9 @@ class Intro(Scene):
         )
         self.wait()
 
-
 class Kmeans(Scene):
     def construct(self):
-        random.seed(42)
+        random.seed(7)
         K = random.randint(2, 4)
 
         axes = Axes(
@@ -310,7 +309,6 @@ class EuclideanDistance(Scene):
         all_mobjects = VGroup(axes, unclassified_dot, origins_dots, lines_and_labels, formula)
         self.play(FadeOut(all_mobjects))
         self.wait()
-
 
 class SwapTest(ThreeDScene):
     def construct(self):
