@@ -47,7 +47,7 @@ class Intro(Scene):
 
 class Kmeans(Scene):
     def construct(self):
-        random.seed(10)
+        random.seed(11)
         K = random.randint(2, 4)
 
         axes = Axes(
