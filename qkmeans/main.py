@@ -20,9 +20,9 @@ def evenly_spaced_colors(n):
 class Intro(Scene):
     def construct(self):
         # Title
-        title = Text("Kvantový Kmeans", font_size=64)
+        title = Text("\tZáklad kvantového algoritmu \nshlukování metodou nejbližších středů", font_size=48)
         # Subtitle
-        subtitle = Text("Ing. Vít Nováček, PhD, Michal Forgó", font_size=20).next_to(title, DOWN, buff=0.4)
+        subtitle = Text("Ing. Vít Nováček PhD, Michal Forgó", font_size=20).next_to(title, DOWN, buff=0.4)
         # Date
         lecture_date = Text("14.5.2025", font_size=20).to_edge(UR, buff=0.4)
 
