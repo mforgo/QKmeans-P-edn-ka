@@ -17,10 +17,17 @@ def evenly_spaced_colors(n):
         for i in range(n)
     ]
 
+
 class Intro(Scene):
     def construct(self):
         # Title
-        title = Text("\tZáklad kvantového algoritmu \nshlukování metodou nejbližších středů", font_size=48)
+        title = Paragraph(
+            "Základ kvantového algoritmu",
+            "shlukování metodou nejbližších středů",
+            font_size=42,
+            line_spacing=1.5,
+            alignment="center"  # zarovná každý řádek na střed
+        ).center()
         # Subtitle
         subtitle = Text("Ing. Vít Nováček PhD, Michal Forgó", font_size=20).next_to(title, DOWN, buff=0.4)
         # Date
@@ -44,6 +51,7 @@ class Intro(Scene):
             FadeOut(ntc_logo)
         )
         self.wait()
+
 
 class Kmeans(Scene):
     def construct(self):
@@ -228,6 +236,7 @@ class Kmeans(Scene):
         )
         self.wait()
 
+
 class EuclideanDistance(Scene):
     def construct(self):
         # 1) Create axes
@@ -299,7 +308,7 @@ class EuclideanDistance(Scene):
 
         # 5) Show the Euclidean distance formula at the top
         formula = Tex(
-            r"Euclidean Distance: $d(\mathbf{x}, \mathbf{y}) = \sqrt{x^2 - y^2}$"
+            r"Euklidovská vzdálenost: $d(\mathbf{x}, \mathbf{y}) = \sqrt{x^2 - y^2}$"
         ).scale(0.6).to_edge(UP)
 
         self.play(Write(formula))
@@ -310,12 +319,14 @@ class EuclideanDistance(Scene):
         self.play(FadeOut(all_mobjects))
         self.wait()
 
+
 class Qcirc(Scene):
     def construct(self):
         svg = SVGMobject("./assets/qcirc.svg").scale(3)
         svg.move_to(ORIGIN)
         self.play(FadeIn(svg))
         self.wait(5)
+
 
 class SwapTest(ThreeDScene):
     def construct(self):
@@ -506,147 +517,98 @@ class SwapTest(ThreeDScene):
 
 class LingebraExplanation(Scene):
     def construct(self):
-        # 1) Prepare your data: a mapping from title → list of MathTex frames
+        # Detailed sections with frames based on the LaTeX document
         states_dict = {
-            # key: what the title bar should read
-            "1. Inicializace qubitů": [
-                MathTex(r"|q_0,\,q_1,\,q_2\rangle", font_size=48),
-                MathTex(r"\,|0\rangle \otimes |0\rangle \otimes |0\rangle", font_size=48),
-                MathTex(
-                    r"\begin{bmatrix}"
-                    r"0\\0\\0\\0\\0\\0\\0\\0"
-                    r"\end{bmatrix}",
-                    font_size=48,
-                )
+            "1. Skalární součin": [
+                MathTex(r"\mathbf{u}, \mathbf{v} \in \mathbb{C}^n", font_size=44),
+                MathTex(r"\langle \mathbf{u}, \mathbf{v} \rangle = \mathbf{u}^\dagger \mathbf{v} = \sum_{i=1}^{n} \overline{u_i} v_i", font_size=44),
+                MathTex(r"\text{kde } \mathbf{u}^\dagger \text{ je Hermitovsky sdružená transpozice}", font_size=40),
+                MathTex(r"\text{a } \overline{u_i} \text{ značí komplexně sdružené číslo}", font_size=40),
             ],
-            "2. Aplikování H hradla na qubity": [
-                MathTex(r"H", font_size=48),
-                MathTex(
-                    r"H = \frac{1}{\sqrt{2}}"
-                    r"\begin{bmatrix}1 & 1 \\ 1 & -1\end{bmatrix}",
-                    font_size=48
-                ),
-                MathTex(
-                    r"\begin{bmatrix}1 & 1 \\ 1 & -1\end{bmatrix}"
-                    r"\begin{bmatrix}"
-                    r"0\\0\\0\\0\\0\\0\\0\\0"
-                    r"\end{bmatrix}",
-                    font_size=48
-                ),
-                MathTex(
-                    r"\bigl(H \otimes H \otimes H\bigr)"
-                    r"\begin{bmatrix}"
-                    r"0\\0\\0\\0\\0\\0\\0\\0"
-                    r"\end{bmatrix}"
-                    r" = "
-                    r"\frac{1}{\sqrt{8}}"
-                    r"\begin{bmatrix}"
-                    r"1\\1\\1\\1\\1\\1\\1\\1"
-                    r"\end{bmatrix}",
-                    font_size=48
-                ),
+            "2. Stavy qubitu v bázových vektorech": [
+                MathTex(r"|0\rangle = \begin{bmatrix} 1 \\ 0 \end{bmatrix}, |1\rangle = \begin{bmatrix} 0 \\ 1 \end{bmatrix}", font_size=44),
+                MathTex(r"|x\rangle = a |0\rangle + b |1\rangle = \begin{bmatrix} a \\ b \end{bmatrix}", font_size=44),
+                MathTex(r"|y\rangle = c |0\rangle + d |1\rangle = \begin{bmatrix} c \\ d \end{bmatrix}", font_size=44),
             ],
-            "3. Zadání Polárních Souřadnic":[
-                MathTex(
-                    r"U(\theta,\phi) =",
-                    r"\begin{pmatrix}"
-                    r"\cos\tfrac{\theta}{2} & -e^{\,i\phi}\sin\tfrac{\theta}{2}\\[6pt]"
-                    r"e^{-\,i\phi}\sin\tfrac{\theta}{2} & \cos\tfrac{\theta}{2}"
-                    r"\end{pmatrix}",
-                    font_size=48,
-                ),
-                MathTex(
-                    r"|\psi_2\rangle",
-                    r"=",
-                    r"\frac{1}{\sqrt{2}}",
-                    r"\bigl(|0\rangle\otimes|\psi\rangle\otimes|\phi\rangle",
-                    r"+",
-                    r"|1\rangle\otimes|\psi\rangle\otimes|\phi\rangle\bigr)",
-                    font_size=48,
-                )
+            "3. Počáteční stav": [
+                MathTex(r"|\psi\rangle = |x\rangle |y\rangle", font_size=44),
+                MathTex(r"|0\rangle |\psi\rangle = |0\rangle |x\rangle |y\rangle", font_size=44),
             ],
-            "4. CSWAP": [
-                MathTex(
-                    r"\mathrm{CSWAP}\,\bigl|0\bigr\rangle\bigl|\psi\bigr\rangle\bigl|\phi\bigr\rangle"
-                    r" = \bigl|0\bigr\rangle\bigl|\psi\bigr\rangle\bigl|\phi\bigr\rangle,"
-                    r"\quad",
-                    r"\mathrm{CSWAP}\,\bigl|1\bigr\rangle\bigl|\psi\bigr\rangle\bigl|\phi\bigr\rangle"
-                    r" = \bigl|1\bigr\rangle\bigl|\phi\bigr\rangle\bigl|\psi\bigr\rangle",
-                    font_size=48,
-                ),
-                MathTex(
-                    r"|\psi_3\rangle",
-                    r"=",
-                    r"\frac{1}{\sqrt{2}}",
-                    r"\bigl(|0\rangle\,|\psi\rangle\,|\phi\rangle",
-                    r"+",
-                    r"|1\rangle\,|\phi\rangle\,|\psi\rangle\bigr)",
-                    font_size=48,
-                )
+            "4. První Hadamardovo hradlo": [
+                MathTex(r"H = \frac{1}{\sqrt{2}} \begin{bmatrix} 1 & 1 \\ 1 & -1 \end{bmatrix}", font_size=44),
+                MathTex(r"H |0\rangle = \frac{1}{\sqrt{2}} \begin{bmatrix} 1 \\ 1 \end{bmatrix} = \frac{1}{\sqrt{2}}(|0\rangle + |1\rangle)", font_size=44),
+                MathTex(r"\frac{1}{\sqrt{2}}(|0\rangle + |1\rangle) |\psi\rangle", font_size=44),
             ],
-            "5. H na ancila qubit": [
-                MathTex(
-                    r"H_{q_2}\,|\psi_3\rangle",
-                    r"=",
-                    r"\tfrac12",
-                    r"\bigl[\,|0\rangle\bigl(|\psi\rangle|\phi\rangle + |\phi\rangle|\psi\rangle\bigr)",
-                    r"+",
-                    r"|1\rangle\bigl(|\psi\rangle|\phi\rangle - |\phi\rangle|\psi\rangle\bigr)\bigr]",
-                    font_size=48,
-                )
+            "5. Operátor CSWAP (Fredkinovo hradlo)": [
+                MathTex(r"\text{CSWAP: kontrolovaná výměna dvou qubitů}", font_size=40),
+                MathTex(r"|0,A,B\rangle \rightarrow |0,A,B\rangle", font_size=40),
+                MathTex(r"|1,A,B\rangle \rightarrow |1,B,A\rangle", font_size=40),
+                MathTex(r"F = \begin{bmatrix} 1&0&0&0&0&0&0&0 \\ 0&1&0&0&0&0&0&0 \\ 0&0&1&0&0&0&0&0 \\ 0&0&0&1&0&0&0&0 \\ 0&0&0&0&1&0&0&0 \\ 0&0&0&0&0&0&1&0 \\ 0&0&0&0&0&1&0&0 \\ 0&0&0&0&0&0&0&1 \end{bmatrix}", font_size=32),
             ],
-            "6. Měření ancila qubitu":[
-                MathTex(
-                    r"\begin{aligned}"
-                    r"P(0) &= \tfrac12\bigl(1 + |\langle \psi \mid \phi \rangle|^2\bigr), \\"
-                    r"P(1) &= \tfrac12\bigl(1 - |\langle \psi \mid \phi \rangle|^2\bigr)."
-                    r"\end{aligned}",
-                    font_size=48,
-                ),
-                MathTex(
-                    r"distance^2 = 1 - |\langle \psi | \phi\rangle|^2",
-                    font_size=48
-                )
+            "6. Tenzorové součiny stavů": [
+                MathTex(r"\frac{1}{\sqrt{2}}(|0\rangle + |1\rangle) |x\rangle |y\rangle = \frac{1}{\sqrt{2}} \begin{bmatrix} 1 \\ 1 \end{bmatrix} \otimes \begin{bmatrix} a \\ b \end{bmatrix} \otimes \begin{bmatrix} c \\ d \end{bmatrix}", font_size=40),
+                MathTex(r"\begin{bmatrix} 1 \\ 1 \end{bmatrix} \otimes \begin{bmatrix} a \\ b \end{bmatrix} = \begin{bmatrix} a \\ b \\ a \\ b \end{bmatrix}", font_size=40),
+                MathTex(r"\begin{bmatrix} a \\ b \\ a \\ b \end{bmatrix} \otimes \begin{bmatrix} c \\ d \end{bmatrix} = \begin{bmatrix} ac \\ ad \\ bc \\ bd \\ ac \\ ad \\ bc \\ bd \end{bmatrix}", font_size=38),
             ],
-            "7. Porovnání výsledků":[
-                MathTex(
-                    r"\begin{array}{c|c}"
-                    r"\text{Cluster} & \text{Měření} \\ \hline"
-                    r"\text{Blue}  & 143 \\"
-                    r"\text{Red}   & 407  \\"
-                    r"\text{Green} & 602"
-                    r"\end{array}",
-                    font_size=48,
-                )
-            ]
+            "7. Aplikace CSWAP hradla": [
+                MathTex(r"F \begin{bmatrix} ac \\ ad \\ bc \\ bd \\ ac \\ ad \\ bc \\ bd \end{bmatrix} = \begin{bmatrix} ac \\ ad \\ bc \\ bd \\ ac \\ bc \\ ad \\ bd \end{bmatrix}", font_size=40),
+                MathTex(r"= \frac{1}{\sqrt{2}}(|0\rangle |x\rangle |y\rangle + |1\rangle |y\rangle |x\rangle)", font_size=40),
+                MathTex(r"= \frac{1}{\sqrt{2}}(|0\rangle |\psi\rangle + |1\rangle \mathcal{F}(|\psi\rangle))", font_size=40),
+                MathTex(r"\text{kde } \mathcal{F}(|\psi\rangle) = |y\rangle |x\rangle", font_size=40),
+            ],
+            "8. Druhé Hadamardovo hradlo": [
+                MathTex(r"H|1\rangle = \frac{1}{\sqrt{2}}(|0\rangle - |1\rangle)", font_size=44),
+                MathTex(r"H \otimes I \otimes I [\frac{1}{\sqrt{2}}(|0\rangle |\psi\rangle + |1\rangle \mathcal{F}(|\psi\rangle))]", font_size=38),
+                MathTex(r"= \frac{1}{2}[|0\rangle(|x\rangle|y\rangle + |y\rangle|x\rangle) + |1\rangle(|x\rangle|y\rangle - |y\rangle|x\rangle)]", font_size=38),
+                MathTex(r"= \frac{1}{2}[|0\rangle(I+\mathcal{F})|\psi\rangle + |1\rangle(I-\mathcal{F})|\psi\rangle]", font_size=38),
+            ],
+            "9. Pravděpodobnost měření ancilly": [
+                MathTex(r"P(|0\rangle) = \left\|\frac{1}{2}(|x\rangle|y\rangle + |y\rangle|x\rangle)\right\|^2", font_size=40),
+                MathTex(r"= \frac{1}{4}(\||xy\rangle\|^2 + 2\langle xy|yx\rangle + \||yx\rangle\|^2)", font_size=40),
+                MathTex(r"= \frac{1}{4}(1 + 2\langle xy|yx\rangle + 1)", font_size=40),
+                MathTex(r"= \frac{1}{2} + \frac{1}{2}\langle xy|yx\rangle", font_size=40),
+            ],
+            "10. Skalární součin a kosinus úhlu": [
+                MathTex(r"|xy\rangle|yx\rangle = ([a,b] \otimes [c,d])^\top ([c,d] \otimes [a,b])", font_size=38),
+                MathTex(r"= [ac,ad,bc,bd] \begin{bmatrix} ca \\ cb \\ da \\ db \end{bmatrix}", font_size=38),
+                MathTex(r"= (ac)^2 + 2abcd + (bd)^2", font_size=38),
+                MathTex(r"(|x\rangle \cdot |y\rangle)^2 = (ac + bd)^2 = (ac)^2 + 2abcd + (bd)^2", font_size=38),
+                MathTex(r"\Rightarrow |xy\rangle|yx\rangle = |\langle x|y\rangle|^2", font_size=40),
+            ],
+            "11. Vztah s kosinem úhlu": [
+                MathTex(r"\langle x|y\rangle = \cos\vartheta", font_size=44),
+                MathTex(r"P(|0\rangle) = \frac{1}{2} + \frac{1}{2}\cos^2\vartheta", font_size=44),
+                MathTex(r"|\cos\vartheta| = \sqrt{2P(|0\rangle) - 1}", font_size=44),
+            ],
+            "12. Závěr": [
+                MathTex(r"\text{Existuje korelace mezi:}", font_size=42),
+                MathTex(r"\text{- pravděpodobností měření ancilly ve stavu }|0\rangle", font_size=38),
+                MathTex(r"\text{- absolutní hodnotou kosinu úhlu mezi stavy }|x\rangle\text{ a }|y\rangle", font_size=38),
+                MathTex(r"\text{To můžeme využít pro kvantovou verzi k-means}", font_size=40),
+            ],
         }
 
-        # 2) Create an (initially empty) title mobject at the top
-        title = Tex("", font_size=48).to_edge(UP)
-        self.play(Write(title))
+        # Animate sections
+        title = Tex("1. Skalární součin", font_size=48).to_edge(UP)
+        self.play(Write(title), run_time=0.8)
         self.wait(0.5)
 
-        # 3) Loop over each section
-        for section_title, frames in states_dict.items():
-            # a) Update the title
-            new_title = Tex(section_title, font_size=48).to_edge(UP)
-            self.play(TransformMatchingTex(title, new_title, run_time=0.8))
-            title = new_title
-            self.wait(0.5)
+        for i, (section, frames) in enumerate(states_dict.items()):
+            if i > 0:  # Skip first section title which is already displayed
+                new_title = Tex(section, font_size=48).to_edge(UP)
+                self.play(TransformMatchingTex(title, new_title, run_time=0.8))
+                title = new_title
+                self.wait(0.5)
 
-            # b) Display the first frame of this section
             current = frames[0].move_to(ORIGIN)
             self.play(Write(current, run_time=0.8))
-            self.wait(0.5)
-
-            # c) Morph through the rest of the frames
+            self.wait(1.5)
+            
             for frame in frames[1:]:
-                frame.move_to(ORIGIN)
-                self.play(ReplacementTransform(current, frame, run_time=0.8))
-                self.wait(2)
-                current = frame
-
-            # d) Clean up before the next section
+                next_frame = frame.move_to(ORIGIN)
+                self.play(ReplacementTransform(current, next_frame, run_time=0.8))
+                self.wait(1.5)
+                current = next_frame
+                
             self.play(FadeOut(current), run_time=0.5)
             self.wait(0.3)
-
